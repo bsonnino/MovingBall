@@ -26,29 +26,26 @@ namespace MovingBall
         public MainPage()
         {
             this.InitializeComponent();
-            Loaded += (s, e) =>
+
+            var inclinometer = Inclinometer.GetDefault();
+            if (inclinometer == null)
             {
-                Canvas.SetLeft(Ball, ActualWidth / 2 - 40);
-                Canvas.SetTop(Ball, ActualHeight - 80);
-                var inclinometer = Inclinometer.GetDefault();
-                if (inclinometer == null)
+                return;
+            }
+            inclinometer.ReadingChanged += async (s1, e1) =>
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    return;
-                }
-                inclinometer.ReadingChanged += async (s1, e1) =>
-                {
-                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                    {
-                        var position = Canvas.GetLeft(Ball);
-                        var newPosition = position + e1.Reading.RollDegrees;
-                        if (newPosition < 0)
-                            newPosition = 0;
-                        if (newPosition > ActualWidth - 80)
-                            newPosition = ActualWidth - 80;
-                        Canvas.SetLeft(Ball, newPosition);
-                    });
-                };
+                    var position = Translation.X;
+                    var newPosition = position + e1.Reading.RollDegrees;
+                    if (newPosition < -(ActualWidth - 80) / 2)
+                        newPosition = -(ActualWidth - 80) / 2;
+                    if (newPosition > (ActualWidth - 80) / 2)
+                        newPosition = (ActualWidth - 80) / 2;
+                    Translation.X = newPosition;
+                });
             };
+
         }
     }
 }
